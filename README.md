@@ -1,0 +1,1 @@
+# Projeto-Arquitetura-de-Sistemas---2026.1
