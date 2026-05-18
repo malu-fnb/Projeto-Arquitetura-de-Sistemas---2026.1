@@ -1,0 +1,16 @@
+services:
+  mqtt:
+    image: eclipse-mosquitto:latest
+    container_name: mosquitto
+    ports:
+      - "1883:1883" #MQTT
+      - "9001:9001" #WebSockets
+    volumes:
+      - ./mosquitto/config:/mosquitto/config
+      - ./mosquitto/data:/mosquitto/data
+      - ./mosquitto/log:/mosquitto/log
+  
+  middleware:
+    build: .
+    depends_on:
+      - mqtt
