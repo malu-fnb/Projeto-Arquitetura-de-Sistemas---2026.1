@@ -11,6 +11,6 @@ services:
       - ./mosquitto/log:/mosquitto/log
   
   middleware:
-    build: .
+    build: ./middleware
     depends_on:
       - mqtt
