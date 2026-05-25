@@ -80,6 +80,26 @@ def create_mqtt_client(args: argparse.Namespace):
         password=args.password,
     )
 
+def process_sensor_data(parsed_data):
+    sensor_data = parsed_data.get("data", {})
+
+    sensor_type = sensor_data.get("sensor")
+
+    if sensor_type == "temperatura":
+        return processar_temperatura(sensor_data)
+
+    elif sensor_type == "umidade":
+        return processar_umidade(sensor_data)
+
+    elif sensor_type == "pressao":
+        return processar_pressao(sensor_data)
+
+    elif sensor_type == "luminosidade":
+        return processar_luminosidade(sensor_data)
+
+    else:
+        raise ValueError(f"Sensor desconhecido: {sensor_type}")
+
 
 def handle_listen(args: argparse.Namespace) -> None:
     client = create_mqtt_client(args)
@@ -88,13 +108,17 @@ def handle_listen(args: argparse.Namespace) -> None:
     def on_message(topic: str, payload: bytes, qos: int, retain: bool) -> None:
         try:
             parsed = parse_message(payload, args.format)
+            processed = process_sensor_data(parsed)
+
             output = {
                 "topic": topic,
                 "qos": qos,
                 "retain": retain,
-                "message": parsed,
+                "message": processed,
             }
+
             print(to_json_string(output), flush=True)
+
         except ParserError as exc:
             logging.error("Could not parse message received on %s: %s", topic, exc)
 
