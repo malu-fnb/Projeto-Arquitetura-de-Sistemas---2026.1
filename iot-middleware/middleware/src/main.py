@@ -12,6 +12,7 @@ from handlers.temperatura import processar_temperatura
 from handlers.pressao import processar_pressao
 from handlers.umidade import processar_umidade
 from handlers.luminosidade import processar_luminosidade
+from uuid import uuid4
 
 LOG_FORMAT = "%(asctime)s | %(levelname)s | %(message)s"
 
@@ -80,22 +81,23 @@ def create_mqtt_client(args: argparse.Namespace):
         password=args.password,
     )
 
-def process_sensor_data(parsed_data):
+
+def process_sensor_data(parsed_data, correlation_id):
     sensor_data = parsed_data.get("data", {})
 
     sensor_type = sensor_data.get("sensor")
 
     if sensor_type == "temperatura":
-        return processar_temperatura(sensor_data)
+        return processar_temperatura(sensor_data, correlation_id)
 
     elif sensor_type == "umidade":
-        return processar_umidade(sensor_data)
+        return processar_umidade(sensor_data, correlation_id)
 
     elif sensor_type == "pressao":
-        return processar_pressao(sensor_data)
+        return processar_pressao(sensor_data, correlation_id)
 
     elif sensor_type == "luminosidade":
-        return processar_luminosidade(sensor_data)
+        return processar_luminosidade(sensor_data, correlation_id)
 
     else:
         raise ValueError(f"Sensor desconhecido: {sensor_type}")
@@ -106,21 +108,42 @@ def handle_listen(args: argparse.Namespace) -> None:
     client.connect()
 
     def on_message(topic: str, payload: bytes, qos: int, retain: bool) -> None:
+        correlation_id = str(uuid4())
+
         try:
             parsed = parse_message(payload, args.format)
-            processed = process_sensor_data(parsed)
+
+            processed = process_sensor_data(parsed, correlation_id)
 
             output = {
                 "topic": topic,
                 "qos": qos,
                 "retain": retain,
+                "correlation_id": correlation_id,
                 "message": processed,
             }
 
             print(to_json_string(output), flush=True)
 
         except ParserError as exc:
-            logging.error("Could not parse message received on %s: %s", topic, exc)
+            logging.error(
+                {
+                    "erro": "Falha ao fazer parse da mensagem",
+                    "topic": topic,
+                    "correlation_id": correlation_id,
+                    "detalhes": str(exc),
+                }
+            )
+
+        except Exception as exc:
+            logging.error(
+                {
+                    "erro": "Falha ao processar sensor",
+                    "topic": topic,
+                    "correlation_id": correlation_id,
+                    "detalhes": str(exc),
+                }
+            )
 
     client.subscribe(args.topic, on_message, qos=args.qos)
     logging.info("Listening on topic '%s'. Press Ctrl+C to stop.", args.topic)
