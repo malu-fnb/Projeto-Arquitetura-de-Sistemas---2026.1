@@ -8,6 +8,10 @@ from pathlib import Path
 from typing import Optional
 
 from parser import ParserError, parse_message, to_json_string
+from handlers.temperatura import processar_temperatura
+from handlers.pressao import processar_pressao
+from handlers.umidade import processar_umidade
+from handlers.luminosidade import processar_luminosidade
 
 LOG_FORMAT = "%(asctime)s | %(levelname)s | %(message)s"
 
