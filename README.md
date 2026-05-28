@@ -1,4 +1,4 @@
-# Projeto: Middleware Distribuído para IoT - 2° GQ (2026.1)
+# Projeto: Middleware Distribuído para IoT - 2° GQ 
 
 
 O objetivo do projeto é implementar, **do zero** (sem o uso de API Gateways prontos), uma camada de middleware distribuído capaz de gerenciar a comunicação, resiliência, observabilidade e segurança entre serviços de uma aplicação voltada para o domínio de **Monitoramento e IoT**.
