@@ -1,4 +1,4 @@
-# Projeto: Middleware Distribuído para IoT - 2° GQ 
+# Projeto: Middleware Distribuído para IoT
 
 ### Integrantes do Grupo:
 * **Antônio Edson Alves de Holanda Neto**
@@ -61,35 +61,9 @@ Desafio: Responsável por diagnosticar e mitigar falhas críticas de runtime no 
 
 ***Matheus Fabiano Barbosa Aguiar***
 
-Desafio: Responsável pela camada de apresentação de dados e observabilidade em um Dashboard. Teve o desafio de integrar o consumo assíncrono de mensagens MQTT com os gargalos de latência de um dashboard visual em tempo real, mitigando concorrência de concorrência e garantindo que os dados de telemetria fossem renderizados sem perdas, teve dificuldades em fazer a integração entre os dados no dashboard.
+Desafio: Responsável pela camada de apresentação de dados e observabilidade em um Dashboard. Teve o desafio de integrar o consumo assíncrono de mensagens MQTT com os gargalos de latência de um dashboard visual em tempo real, mitigando concorrência de concorrência e garantindo que os dados de telemetria fossem renderizados sem perdas.
 
----
 
-## Desafios Encontrados
-
-***Antônio Edson Alves de Holanda Neto***
-
-Dificuldade Encontrada:
-
-***Arthur Felipe Leite de Vasconcelos***
-
-Difuculdade Encontrada:
-
-***Dacio da Silva Melo Junior***
-
-Dificuldade Encontrada:
-
-***David Cândido de Souza***
-
-Dificuldade Encontrada:
-
-***Malu de Faria Neves Bezerra***
-
-Dificuldade Encontrada:
-
-***Matheus Fabiano Barbosa Aguiar***
-
-Dificuldade Encontrada:
 
 
 
