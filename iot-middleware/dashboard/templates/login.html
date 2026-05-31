@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>IoT Middleware — Login</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0a0e17;
+      --panel: #0f1522;
+      --border: #1e2d45;
+      --accent: #00d4ff;
+      --accent2: #00ff9d;
+      --text: #c8d8e8;
+      --muted: #4a6380;
+      --error: #ff4d6d;
+      --mono: 'JetBrains Mono', monospace;
+      --sans: 'Syne', sans-serif;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: var(--bg);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--sans);
+      overflow: hidden;
+      position: relative;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(var(--border) 1px, transparent 1px),
+        linear-gradient(90deg, var(--border) 1px, transparent 1px);
+      background-size: 48px 48px;
+      opacity: 0.4;
+      animation: gridScroll 20s linear infinite;
+    }
+
+    @keyframes gridScroll {
+      from { background-position: 0 0; }
+      to { background-position: 48px 48px; }
+    }
+
+    body::after {
+      content: '';
+      position: fixed;
+      width: 600px; height: 600px;
+      background: radial-gradient(circle, rgba(0,212,255,0.07) 0%, transparent 70%);
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+    }
+
+    .login-wrap {
+      position: relative;
+      z-index: 10;
+      width: 100%;
+      max-width: 420px;
+      padding: 0 20px;
+      animation: fadeUp 0.6s ease both;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .badge {
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 3px;
+      color: var(--accent);
+      text-transform: uppercase;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .badge::before {
+      content: '';
+      width: 6px; height: 6px;
+      background: var(--accent2);
+      border-radius: 50%;
+      box-shadow: 0 0 8px var(--accent2);
+      animation: pulse 2s ease infinite;
+    }
+    @keyframes pulse {
+      0%,100% { opacity:1; transform:scale(1); }
+      50%      { opacity:.4; transform:scale(1.4); }
+    }
+
+    h1 {
+      font-size: 32px;
+      font-weight: 800;
+      color: #fff;
+      margin-bottom: 4px;
+      line-height: 1.1;
+    }
+    h1 span { color: var(--accent); }
+
+    .subtitle {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 36px;
+    }
+
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 36px;
+      box-shadow: 0 24px 60px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05);
+    }
+
+    .field {
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 2px;
+      color: var(--muted);
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    input {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 13px 16px;
+      font-family: var(--mono);
+      font-size: 14px;
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    input::placeholder { color: var(--muted); }
+    input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(0,212,255,0.1);
+    }
+
+    .btn {
+      width: 100%;
+      margin-top: 28px;
+      padding: 14px;
+      background: var(--accent);
+      color: var(--bg);
+      border: none;
+      border-radius: 8px;
+      font-family: var(--sans);
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
+      position: relative;
+      overflow: hidden;
+    }
+    .btn:hover {
+      background: #33ddff;
+      box-shadow: 0 0 24px rgba(0,212,255,0.4);
+    }
+    .btn:active { transform: scale(0.98); }
+    .btn.loading { pointer-events: none; opacity: 0.7; }
+    .btn .spinner {
+      display: none;
+      width: 16px; height: 16px;
+      border: 2px solid rgba(0,0,0,0.3);
+      border-top-color: var(--bg);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      margin: 0 auto;
+    }
+    .btn.loading .label { display:none; }
+    .btn.loading .spinner { display:block; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .error-msg {
+      display: none;
+      margin-top: 16px;
+      padding: 12px 14px;
+      background: rgba(255,77,109,0.1);
+      border: 1px solid rgba(255,77,109,0.3);
+      border-radius: 8px;
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--error);
+    }
+
+    .hint {
+      margin-top: 20px;
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--muted);
+      text-align: center;
+      line-height: 1.7;
+    }
+  </style>
+</head>
+<body>
+  <div class="login-wrap">
+    <div class="badge">Sistema Online</div>
+    <h1>IoT <span>Middleware</span></h1>
+    <p class="subtitle">// acesso ao painel de controle</p>
+
+    <div class="card">
+      <div class="field">
+        <label>Usuário</label>
+        <input type="text" id="username" placeholder="ex: admin" autocomplete="username" />
+      </div>
+      <div class="field">
+        <label>Senha</label>
+        <input type="password" id="password" placeholder="••••••••" autocomplete="current-password" />
+      </div>
+
+      <button class="btn" id="loginBtn" onclick="doLogin()">
+        <span class="label">Entrar</span>
+        <div class="spinner"></div>
+      </button>
+
+      <div class="error-msg" id="errMsg"></div>
+
+      <p class="hint">
+        admin / admin123 &nbsp;·&nbsp; operador / operador456
+      </p>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Enter') doLogin();
+    });
+
+    async function doLogin() {
+      const btn = document.getElementById('loginBtn');
+      const err = document.getElementById('errMsg');
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value;
+
+      err.style.display = 'none';
+
+      if (!username || !password) {
+        showError('Preencha usuário e senha.');
+        return;
+      }
+
+      btn.classList.add('loading');
+
+      try {
+        const res = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password }),
+          credentials: 'include',
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          showError(data.error || 'Erro ao autenticar.');
+          return;
+        }
+
+        window.location.href = '/dashboard';
+
+      } catch (e) {
+        showError('Erro de conexão. Verifique o servidor.');
+      } finally {
+        btn.classList.remove('loading');
+      }
+    }
+
+    function showError(msg) {
+      const el = document.getElementById('errMsg');
+      el.textContent = '⚠ ' + msg;
+      el.style.display = 'block';
+    }
+  </script>
+</body>
+</html>

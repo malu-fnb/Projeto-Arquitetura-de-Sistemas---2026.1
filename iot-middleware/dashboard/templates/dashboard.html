@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>IoT Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0a0e17;
+      --panel: #0f1522;
+      --panel2: #121926;
+      --border: #1e2d45;
+      --accent: #00d4ff;
+      --accent2: #00ff9d;
+      --accent3: #ff6b6b;
+      --text: #c8d8e8;
+      --muted: #4a6380;
+      --mono: 'JetBrains Mono', monospace;
+      --sans: 'Syne', sans-serif;
+    }
+
+    * { margin:0; padding:0; box-sizing:border-box; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      min-height: 100vh;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 32px;
+      height: 60px;
+      border-bottom: 1px solid var(--border);
+      background: var(--panel);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 18px;
+      font-weight: 800;
+      color: #fff;
+    }
+    .logo-dot {
+      width: 10px; height: 10px;
+      background: var(--accent2);
+      border-radius: 50%;
+      box-shadow: 0 0 10px var(--accent2);
+      animation: pulse 2s ease infinite;
+    }
+    @keyframes pulse {
+      0%,100% { opacity:1; transform:scale(1); }
+      50%      { opacity:.4; transform:scale(1.5); }
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      font-family: var(--mono);
+      font-size: 12px;
+    }
+    #clock { color: var(--accent); }
+    .user-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--muted);
+    }
+    .user-badge strong { color: var(--text); }
+
+    .logout-btn {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      padding: 6px 14px;
+      border-radius: 6px;
+      font-family: var(--mono);
+      font-size: 11px;
+      cursor: pointer;
+      transition: all 0.2s;
+      letter-spacing: 1px;
+    }
+    .logout-btn:hover {
+      border-color: var(--accent3);
+      color: var(--accent3);
+    }
+
+    main {
+      padding: 28px 32px;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .page-title {
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 3px;
+      color: var(--muted);
+      text-transform: uppercase;
+      margin-bottom: 24px;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+
+    .stat-card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px 24px;
+      position: relative;
+      overflow: hidden;
+      transition: border-color 0.2s;
+      animation: fadeUp 0.5s ease both;
+    }
+    .stat-card:nth-child(1) { animation-delay:.05s }
+    .stat-card:nth-child(2) { animation-delay:.1s }
+    .stat-card:nth-child(3) { animation-delay:.15s }
+    .stat-card:nth-child(4) { animation-delay:.2s }
+
+    @keyframes fadeUp {
+      from { opacity:0; transform:translateY(16px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+    }
+    .stat-card.blue::before  { background: var(--accent); }
+    .stat-card.green::before { background: var(--accent2); }
+    .stat-card.red::before   { background: var(--accent3); }
+    .stat-card.purple::before{ background: #a855f7; }
+
+    .stat-label {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+
+    .stat-value {
+      font-size: 36px;
+      font-weight: 800;
+      color: #fff;
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+    .stat-card.blue  .stat-value { color: var(--accent);  }
+    .stat-card.green .stat-value { color: var(--accent2); }
+    .stat-card.red   .stat-value { color: var(--accent3); }
+    .stat-card.purple .stat-value{ color: #a855f7; }
+
+    .stat-sub {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .bottom-grid {
+      display: grid;
+      grid-template-columns: 1fr 340px;
+      gap: 16px;
+    }
+
+    @media (max-width: 900px) {
+      .bottom-grid { grid-template-columns: 1fr; }
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      animation: fadeUp 0.5s ease 0.25s both;
+    }
+
+    .panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+    }
+    .panel-title {
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+    .panel-action {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--muted);
+      cursor: pointer;
+      transition: color .2s;
+    }
+    .panel-action:hover { color: var(--accent); }
+
+    .messages-wrap {
+      overflow-y: auto;
+      max-height: 420px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: var(--mono);
+      font-size: 12px;
+    }
+    thead th {
+      padding: 10px 16px;
+      text-align: left;
+      color: var(--muted);
+      font-size: 10px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      background: var(--panel2);
+    }
+    tbody tr {
+      border-bottom: 1px solid rgba(30,45,69,0.5);
+      transition: background .15s;
+    }
+    tbody tr:hover { background: rgba(0,212,255,0.04); }
+    tbody td {
+      padding: 10px 16px;
+      color: var(--text);
+      vertical-align: top;
+    }
+    .td-ts { color: var(--muted); font-size: 11px; white-space: nowrap; }
+    .td-device {
+      color: var(--accent2);
+      white-space: nowrap;
+    }
+    .td-topic { color: var(--muted); }
+    .td-payload {
+      max-width: 260px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      color: var(--text);
+    }
+
+    .empty-state {
+      padding: 48px;
+      text-align: center;
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .empty-state .icon { font-size: 28px; margin-bottom: 8px; }
+    
+    .devices-list { padding: 16px; }
+
+    .device-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      margin-bottom: 6px;
+      background: var(--panel2);
+      border: 1px solid var(--border);
+      font-family: var(--mono);
+      font-size: 12px;
+      transition: border-color .2s;
+    }
+    .device-item:hover { border-color: var(--accent2); }
+    .device-dot {
+      width: 7px; height: 7px;
+      background: var(--accent2);
+      border-radius: 50%;
+      box-shadow: 0 0 6px var(--accent2);
+      flex-shrink: 0;
+    }
+    .device-name { color: var(--text); flex: 1; }
+    .device-count {
+      color: var(--muted);
+      font-size: 10px;
+    }
+
+    .no-devices {
+      padding: 32px 16px;
+      text-align: center;
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .status-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 16px;
+      border-top: 1px solid var(--border);
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--muted);
+    }
+    .status-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--accent2);
+      box-shadow: 0 0 6px var(--accent2);
+    }
+    #statusText { margin-left: 2px; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">
+      <div class="logo-dot"></div>
+      IoT Middleware
+    </div>
+    <div class="header-right">
+      <span id="clock">--:--:--</span>
+      <div class="user-badge">
+        operador: <strong>{{ username }}</strong>
+      </div>
+      <button class="logout-btn" onclick="logout()">SAIR</button>
+    </div>
+  </header>
+
+  <main>
+    <div class="page-title">// painel de monitoramento em tempo real</div>
+
+    <!-- Stat Cards -->
+    <div class="stats-grid">
+      <div class="stat-card blue">
+        <div class="stat-label">Total de Mensagens</div>
+        <div class="stat-value" id="statTotal">—</div>
+        <div class="stat-sub">mensagens recebidas</div>
+      </div>
+      <div class="stat-card green">
+        <div class="stat-label">Dispositivos Ativos</div>
+        <div class="stat-value" id="statDevices">—</div>
+        <div class="stat-sub">conectados agora</div>
+      </div>
+      <div class="stat-card purple">
+        <div class="stat-label">Última Mensagem</div>
+        <div class="stat-value" style="font-size:18px;margin-top:6px" id="statLast">—</div>
+        <div class="stat-sub">timestamp UTC</div>
+      </div>
+      <div class="stat-card red">
+        <div class="stat-label">Status Middleware</div>
+        <div class="stat-value" style="font-size:22px;margin-top:4px" id="statStatus">—</div>
+        <div class="stat-sub" id="statRetries">retries: 0</div>
+      </div>
+    </div>
+
+    <!-- Tabela + Dispositivos -->
+    <div class="bottom-grid">
+      <!-- Mensagens -->
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">Mensagens Recentes</span>
+          <span class="panel-action" onclick="fetchData()">↻ atualizar</span>
+        </div>
+        <div class="messages-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Timestamp</th>
+                <th>Device ID</th>
+                <th>Tópico</th>
+                <th>Payload</th>
+              </tr>
+            </thead>
+            <tbody id="messagesBody">
+              <tr><td colspan="4">
+                <div class="empty-state">
+                  <div class="icon">📡</div>
+                  Aguardando dados dos sensores...
+                </div>
+              </td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="status-bar">
+          <div class="status-dot"></div>
+          <span id="statusText">conectado — atualizando a cada 5s</span>
+        </div>
+      </div>
+
+      <!-- Dispositivos -->
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">Dispositivos</span>
+        </div>
+        <div class="devices-list" id="devicesList">
+          <div class="no-devices">Nenhum dispositivo detectado</div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    function updateClock() {
+      document.getElementById('clock').textContent =
+        new Date().toLocaleTimeString('pt-BR', { hour12: false });
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+    
+    async function logout() {
+      await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
+      window.location.href = '/login';
+    }
+
+    let deviceCounts = {};
+
+    async function fetchWithRetry(url, options = {}, retries = 2, delay = 800) {
+      for (let attempt = 0; attempt <= retries; attempt++) {
+        try {
+          const res = await fetch(url, { ...options, credentials: 'include' });
+
+          if (res.status === 401) {
+            window.location.href = '/login';
+            return null;
+          }
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          return await res.json();
+
+        } catch (err) {
+          if (attempt < retries) {
+            document.getElementById('statRetries').textContent =
+              `retry ${attempt + 1}/${retries}...`;
+            await new Promise(r => setTimeout(r, delay));
+          } else {
+            throw err;
+          }
+        }
+      }
+    }
+
+    async function fetchStats() {
+      try {
+        const data = await fetchWithRetry('/api/data/stats');
+        if (!data) return;
+
+        document.getElementById('statTotal').textContent   = data.total_messages ?? 0;
+        document.getElementById('statDevices').textContent = data.active_devices ?? 0;
+        document.getElementById('statStatus').textContent  = '● ONLINE';
+        document.getElementById('statRetries').textContent = 'retries: 0';
+
+        const lastTs = data.last_message;
+        document.getElementById('statLast').textContent =
+          lastTs ? lastTs.slice(11, 19) : '—';
+
+        renderDevices(data.devices || []);
+
+      } catch (e) {
+        document.getElementById('statStatus').textContent  = '✕ ERRO';
+        document.getElementById('statRetries').textContent = 'falha após retries';
+      }
+    }
+
+    async function fetchData() {
+      try {
+        const data = await fetchWithRetry('/api/data');
+        if (!data) return;
+
+        const tbody = document.getElementById('messagesBody');
+
+        if (!data.records || data.records.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="4">
+            <div class="empty-state">
+              <div class="icon">📡</div>
+              Aguardando dados dos sensores...
+            </div></td></tr>`;
+          return;
+        }
+
+        deviceCounts = {};
+        data.records.forEach(r => {
+          deviceCounts[r.device_id] = (deviceCounts[r.device_id] || 0) + 1;
+        });
+
+        tbody.innerHTML = data.records.map(r => {
+          const payload = typeof r.payload === 'object'
+            ? JSON.stringify(r.payload)
+            : String(r.payload);
+          return `<tr>
+            <td class="td-ts">${r.timestamp || '—'}</td>
+            <td class="td-device">${r.device_id || '—'}</td>
+            <td class="td-topic">${r.topic || '—'}</td>
+            <td class="td-payload" title="${payload}">${payload}</td>
+          </tr>`;
+        }).join('');
+
+        document.getElementById('statusText').textContent =
+          `atualizado às ${new Date().toLocaleTimeString('pt-BR')} — ${data.total} registros`;
+
+      } catch (e) {
+        document.getElementById('statusText').textContent = '⚠ erro ao carregar dados';
+      }
+    }
+
+    function renderDevices(devices) {
+      const el = document.getElementById('devicesList');
+      if (!devices.length) {
+        el.innerHTML = '<div class="no-devices">Nenhum dispositivo detectado</div>';
+        return;
+      }
+      el.innerHTML = devices.map(d => `
+        <div class="device-item">
+          <div class="device-dot"></div>
+          <span class="device-name">${d}</span>
+          <span class="device-count">${deviceCounts[d] || 0} msgs</span>
+        </div>`).join('');
+    }
+
+    async function tick() {
+      await Promise.all([fetchStats(), fetchData()]);
+    }
+
+    tick();
+    setInterval(tick, 5000);
+  </script>
+</body>
+</html>
