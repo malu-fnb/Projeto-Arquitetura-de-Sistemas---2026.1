@@ -1,10 +1,18 @@
 # Projeto: Middleware Distribuído para IoT - 2° GQ 
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 3c4089b903878bdb1fb1e5f3d392dcc82478e910
 O objetivo do projeto é implementar, **do zero** (sem o uso de API Gateways prontos), uma camada de middleware distribuído capaz de gerenciar a comunicação, resiliência, observabilidade e segurança entre serviços de uma aplicação voltada para o domínio de **Monitoramento e IoT**.
 
 ---
 
+<<<<<<< HEAD
 ##  Domínio Escolhido & Fluxo da Aplicação
+=======
+## Domínio Escolhido & Fluxo da Aplicação
+>>>>>>> 3c4089b903878bdb1fb1e5f3d392dcc82478e910
 
 O sistema foi modelado para processar dados de telemetria enviados por sensores distribuídos (dispositivos IoT simulados). 
 
@@ -15,6 +23,7 @@ O sistema foi modelado para processar dados de telemetria enviados por sensores 
 
 ---
 
+<<<<<<< HEAD
 ##  Tecnologias Utilizadas
 
 * **Linguagem Principal:** Python 3 (com bibliotecas nativas e drivers de rede)
@@ -41,3 +50,10 @@ Seguindo as diretrizes estruturais exigidas para o projeto, a árvore do reposit
 │           └── parser.py        # Módulo de tratamento de pacotes e tratamento defensivo
 ├── docs/                        # Relatório técnico final, diagramas e histórico de decisões
 └── README.md                    # Instruções de execução e visão geral (este arquivo)
+=======
+## Tecnologias Utilizadas
+
+* **Linguagem Principal:** Python 3 (com bibliotecas nativas e drivers de rede)
+* **Mensageria/Fila:** Eclipse Mosquitto (Broker MQTT)
+* **Ambiente e Orquestração:** Docker & Docker Descktop
+>>>>>>> 3c4089b903878bdb1fb1e5f3d392dcc82478e910
