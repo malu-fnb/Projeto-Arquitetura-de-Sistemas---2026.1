@@ -35,28 +35,62 @@ O sistema foi modelado para processar dados de telemetria enviados por sensores 
 
 ---
 
-## Desafios e Contribuições dos Integrantes
+## Contribuições dos Integrantes
 
-***Malu de Faria Neves Bezerra***
-
-Desafio: Responsável por diagnosticar e mitigar falhas críticas de runtime no container do middleware. Enfrentou dificuldades na sincronização de caminhos internos do Dockerfile com o script, na resolução do comportamento de silenciamento de logs por conta do buffering padrão do Python em containers (resolvido com o modo unbuffered -u) e na estruturação do gerenciamento de conexões assíncronas persistentes do cliente MQTT.
 
 ***Antônio Edson Alves de Holanda Neto***
 
 Desafio: Concentrou-se na infraestrutura e controle de versão, lidando com severas dificuldades na configuração de ambiente e na resolução de conflitos complexos de mesclagem de código (merge conflicts) com outras branches concorrentes, afetando diretamente a estabilidade do arquivo principal (main.py).
 
-***David Cândido de Souza***
-
-Desafio: Enfrentou complexidade na curva de aprendizado conceitual sobre sistemas distribuídos orientados a eventos, especificamente na compreensão da macroarquitetura do middleware e em como desacoplar de maneira eficiente o fluxo de comunicação interna entre o cliente MQTT, o módulo de tratamento (parser.py) e os handlers finais.
-
 ***Arthur Felipe Leite de Vasconcelos***
 
 Desafio: Responsável pela camada de infraestrutura virtualizada. Enfrentou barreiras no isolamento das redes internas do Docker Compose, na persistência de volumes voláteis para o broker de mensagens e na garantia de que múltiplos containers conseguissem resolver o mapeamento de portas locais de forma transparente.
+
 
 ***Dacio da Silva Melo Junior***
 
 Desafio: Focado no fluxo lógico do ponto de entrada principal (main.py). O principal obstáculo técnico foi desenvolver rotinas de tratamento defensivo de erros para garantir que o script principal não encerrasse sua execução abruptamente na ausência momentânea do broker MQTT, criando loops robustos de reconexão automática.
 
+***David Cândido de Souza***
+
+Desafio: Enfrentou complexidade na curva de aprendizado conceitual sobre sistemas distribuídos orientados a eventos, especificamente na compreensão da macroarquitetura do middleware e em como desacoplar de maneira eficiente o fluxo de comunicação interna entre o cliente MQTT, o módulo de tratamento (parser.py) e os handlers finais.
+
+***Malu de Faria Neves Bezerra***
+
+Desafio: Responsável por diagnosticar e mitigar falhas críticas de runtime no container do middleware. Enfrentou dificuldades na sincronização de caminhos internos do Dockerfile com o script, na resolução do comportamento de silenciamento de logs por conta do buffering padrão do Python em containers (resolvido com o modo unbuffered -u) e na estruturação do gerenciamento de conexões assíncronas persistentes do cliente MQTT.
+
 ***Matheus Fabiano Barbosa Aguiar***
 
-Desafio: Responsável pela camada de apresentação de dados e observabilidade em um Dashboard. Teve o desafio de integrar o consumo assíncrono de mensagens MQTT com os gargalos de latência de um dashboard visual em tempo real, mitigando concorrência de concorrência e garantindo que os dados de telemetria fossem renderizados sem perdas, teve dificuldades em fazer a integração entre os dados no dashboard 
+Desafio: Responsável pela camada de apresentação de dados e observabilidade em um Dashboard. Teve o desafio de integrar o consumo assíncrono de mensagens MQTT com os gargalos de latência de um dashboard visual em tempo real, mitigando concorrência de concorrência e garantindo que os dados de telemetria fossem renderizados sem perdas, teve dificuldades em fazer a integração entre os dados no dashboard.
+
+---
+
+## Desafios Encontrados
+
+***Antônio Edson Alves de Holanda Neto***
+
+Dificuldade Encontrada:
+
+***Arthur Felipe Leite de Vasconcelos***
+
+Difuculdade Encontrada:
+
+***Dacio da Silva Melo Junior***
+
+Dificuldade Encontrada:
+
+***David Cândido de Souza***
+
+Dificuldade Encontrada:
+
+***Malu de Faria Neves Bezerra***
+
+Dificuldade Encontrada:
+
+***Matheus Fabiano Barbosa Aguiar***
+
+Dificuldade Encontrada:
+
+
+
+
