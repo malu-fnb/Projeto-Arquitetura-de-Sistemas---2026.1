@@ -5,7 +5,7 @@ O objetivo do projeto é implementar, **do zero** (sem o uso de API Gateways pro
 
 ---
 
-## 🏗️ Domínio Escolhido & Fluxo da Aplicação
+## Domínio Escolhido & Fluxo da Aplicação
 
 O sistema foi modelado para processar dados de telemetria enviados por sensores distribuídos (dispositivos IoT simulados). 
 
@@ -16,29 +16,8 @@ O sistema foi modelado para processar dados de telemetria enviados por sensores 
 
 ---
 
-## 🛠️ Tecnologias Utilizadas
+## Tecnologias Utilizadas
 
 * **Linguagem Principal:** Python 3 (com bibliotecas nativas e drivers de rede)
 * **Mensageria/Fila:** Eclipse Mosquitto (Broker MQTT)
-* **Ambiente e Orquestração:** Docker & Docker Compose
-
----
-
-## 📁 Estrutura do Repositório
-
-Seguindo as diretrizes estruturais exigidas para o projeto, a árvore do repositório está organizada da seguinte forma:
-
-```text
-├── iot-middleware/
-│   ├── docker-compose.yml       # Orquestração de todo o ecossistema distribuído
-│   ├── mosquito/
-│   │   └── config/
-│   │       └── mosquito.conf    # Configurações de segurança e rede do Broker MQTT
-│   └── middleware/
-│       ├── Dockerfile           # Blueprint de build da imagem isolada do Middleware
-│       ├── requirements.txt     # Dependências de bibliotecas auxiliares Python
-│       └── src/
-│           ├── main.py          # Ponto de entrada (Cliente MQTT e fluxo de orquestração)
-│           └── parser.py        # Módulo de tratamento de pacotes e tratamento defensivo
-├── docs/                        # Relatório técnico final, diagramas e histórico de decisões
-└── README.md                    # Instruções de execução e visão geral (este arquivo)
+* **Ambiente e Orquestração:** Docker & Docker Descktop
