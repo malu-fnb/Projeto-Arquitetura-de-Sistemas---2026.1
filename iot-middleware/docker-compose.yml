@@ -7,7 +7,27 @@ services:
       - "9001:9001"
     command: mosquitto -c /mosquitto-no-auth.conf
 
+  dashboard:
+    build: ./dashboard
+    container_name: iot-dashboard
+    ports:
+      - "5000:5000"
+    environment:
+      DASHBOARD_PORT: "5000"
+      JWT_SECRET_KEY: "iot-secret-dev-key-2024"
+
   middleware:
     build: ./middleware
+    container_name: iot-middleware
     depends_on:
       - mqtt
+      - dashboard
+    environment:
+      MQTT_HOST: "mqtt"
+      MQTT_PORT: "1883"
+      MQTT_TOPIC: "sensores/#"
+      PARSER_FORMAT: "auto"
+
+      DASHBOARD_URL: "http://dashboard:5000"
+      DASHBOARD_USERNAME: "admin"
+      DASHBOARD_PASSWORD: "admin123"

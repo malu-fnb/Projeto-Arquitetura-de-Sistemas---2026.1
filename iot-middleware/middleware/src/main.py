@@ -4,6 +4,7 @@ import argparse
 import logging
 import os
 import sys
+import time
 from pathlib import Path
 from typing import Optional
 from uuid import uuid4
@@ -13,6 +14,7 @@ from handlers.temperatura import processar_temperatura
 from handlers.pressao import processar_pressao
 from handlers.umidade import processar_umidade
 from handlers.luminosidade import processar_luminosidade
+from clients.dashboard_client import DashboardClient
 
 LOG_FORMAT = "%(asctime)s | %(levelname)s | %(message)s"
 
@@ -82,6 +84,14 @@ def create_mqtt_client(args: argparse.Namespace):
     )
 
 
+def create_dashboard_client() -> DashboardClient:
+    return DashboardClient(
+        base_url=os.getenv("DASHBOARD_URL", "http://dashboard:5000"),
+        username=os.getenv("DASHBOARD_USERNAME", "admin"),
+        password=os.getenv("DASHBOARD_PASSWORD", "admin123"),
+    )
+
+
 def process_sensor_data(parsed_data, correlation_id):
     sensor_data = parsed_data.get("data", {})
     sensor_type = sensor_data.get("sensor")
@@ -101,8 +111,24 @@ def process_sensor_data(parsed_data, correlation_id):
     raise ValueError(f"Sensor desconhecido: {sensor_type}")
 
 
+def build_dashboard_payload(topic: str, processed: dict) -> dict:
+    return {
+        "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+        "device_id": processed.get("sensor", "desconhecido"),
+        "topic": topic,
+        "payload": processed,
+    }
+
+
 def handle_listen(args: argparse.Namespace) -> None:
     client = create_mqtt_client(args)
+
+    dashboard_client = create_dashboard_client()
+    dashboard_available = dashboard_client.login()
+
+    if not dashboard_available:
+        logging.warning("Dashboard indisponível ou login falhou. Middleware continuará apenas processando logs.")
+
     client.connect()
 
     def on_message(topic: str, payload: bytes, qos: int, retain: bool) -> None:
@@ -121,6 +147,20 @@ def handle_listen(args: argparse.Namespace) -> None:
             }
 
             print(to_json_string(output), flush=True)
+
+            dashboard_payload = build_dashboard_payload(topic, processed)
+
+            if dashboard_available:
+                sent = dashboard_client.send_data(dashboard_payload)
+
+                if not sent:
+                    logging.error(
+                        {
+                            "erro": "Falha ao enviar dado para o dashboard",
+                            "topic": topic,
+                            "correlation_id": correlation_id,
+                        }
+                    )
 
         except ParserError as exc:
             logging.error(
