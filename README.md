@@ -1,59 +1,62 @@
 # Projeto: Middleware Distribuído para IoT - 2° GQ 
 
-<<<<<<< HEAD
-=======
+### Integrantes do Grupo:
+* **Antônio Edson Alves de Holanda Neto**
+* **Arthur Filipe Leite de Vasconcelos**
+* **Dacio da Silva Melo Junior**
+* **David Cândido de Souza**
+* **Malu de Faria Neves Bezerra**
+* **Matheus Fabiano Barbosa Aguiar**
 
->>>>>>> 3c4089b903878bdb1fb1e5f3d392dcc82478e910
+---
+
+## Visão Geral
 O objetivo do projeto é implementar, **do zero** (sem o uso de API Gateways prontos), uma camada de middleware distribuído capaz de gerenciar a comunicação, resiliência, observabilidade e segurança entre serviços de uma aplicação voltada para o domínio de **Monitoramento e IoT**.
 
 ---
 
-<<<<<<< HEAD
-##  Domínio Escolhido & Fluxo da Aplicação
-=======
 ## Domínio Escolhido & Fluxo da Aplicação
->>>>>>> 3c4089b903878bdb1fb1e5f3d392dcc82478e910
 
 O sistema foi modelado para processar dados de telemetria enviados por sensores distribuídos (dispositivos IoT simulados). 
 
-1. **Dispositivos IoT (Sensores):** Enviam leituras brutas via protocolo MQTT.
-2. **Broker MQTT (Eclipse Mosquitto):** Atua como o canal de mensageria assíncrona, exigindo credenciais seguras.
-3. **Serviço de Middleware (Python):** Consome os tópicos do broker, injeta metadados arquiteturais e passa as informações brutas pelo módulo de processamento (`parser.py`).
-4. **Mapeamento de Serviços:** O ecossistema foi desacoplado de forma que o consumo, o processamento de dados brutas e as operações finais rodem de maneira independente e em containers separados.
+1. **Dispositivos IoT (Sensores):** Enviam leituras brutas utilizando o protocolo leve MQTT.
+2. **Broker MQTT (Eclipse Mosquitto):** Atua como o barramento de mensageria assíncrona isolado em container.
+3. **Serviço de Middleware (Python):** Consome os tópicos do broker em tempo real, injeta metadados arquiteturais e faz o tratamento defensivo dos pacotes.
+4. **Desacoplamento:** O ecossistema foi projetado para garantir que a recepção de dados, a mensageria e o processamento rodem de forma independente e resiliente através de containers interconectados em rede virtual.
 
 ---
 
-<<<<<<< HEAD
-##  Tecnologias Utilizadas
-
-* **Linguagem Principal:** Python 3 (com bibliotecas nativas e drivers de rede)
-* **Mensageria/Fila:** Eclipse Mosquitto (Broker MQTT)
-* **Ambiente e Orquestração:** Docker & Docker Compose
-
----
-
-##  Estrutura do Repositório
-
-Seguindo as diretrizes estruturais exigidas para o projeto, a árvore do repositório está organizada da seguinte forma:
-
-```text
-├── iot-middleware/
-│   ├── docker-compose.yml       # Orquestração de todo o ecossistema distribuído
-│   ├── mosquito/
-│   │   └── config/
-│   │       └── mosquito.conf    # Configurações de segurança e rede do Broker MQTT
-│   └── middleware/
-│       ├── Dockerfile           # Blueprint de build da imagem isolada do Middleware
-│       ├── requirements.txt     # Dependências de bibliotecas auxiliares Python
-│       └── src/
-│           ├── main.py          # Ponto de entrada (Cliente MQTT e fluxo de orquestração)
-│           └── parser.py        # Módulo de tratamento de pacotes e tratamento defensivo
-├── docs/                        # Relatório técnico final, diagramas e histórico de decisões
-└── README.md                    # Instruções de execução e visão geral (este arquivo)
-=======
 ## Tecnologias Utilizadas
 
-* **Linguagem Principal:** Python 3 (com bibliotecas nativas e drivers de rede)
+* **Linguagem Principal:** Python 3 (executando em modo *unbuffered* para logs instantâneos)
 * **Mensageria/Fila:** Eclipse Mosquitto (Broker MQTT)
-* **Ambiente e Orquestração:** Docker & Docker Descktop
->>>>>>> 3c4089b903878bdb1fb1e5f3d392dcc82478e910
+* **Ambiente e Orquestração:** Docker & Docker Compose
+* **Dependências Python:** Biblioteca `paho-mqtt` para comunicação de rede
+
+---
+
+## Desafios e Contribuições dos Integrantes
+
+***Malu de Faria Neves Bezerra***
+
+Desafio: Responsável por diagnosticar e mitigar falhas críticas de runtime no container do middleware. Enfrentou dificuldades na sincronização de caminhos internos do Dockerfile com o script, na resolução do comportamento de silenciamento de logs por conta do buffering padrão do Python em containers (resolvido com o modo unbuffered -u) e na estruturação do gerenciamento de conexões assíncronas persistentes do cliente MQTT.
+
+***Antônio Edson Alves de Holanda Neto***
+
+Desafio: Concentrou-se na infraestrutura e controle de versão, lidando com severas dificuldades na configuração de ambiente e na resolução de conflitos complexos de mesclagem de código (merge conflicts) com outras branches concorrentes, afetando diretamente a estabilidade do arquivo principal (main.py).
+
+***David Cândido de Souza***
+
+Desafio: Enfrentou complexidade na curva de aprendizado conceitual sobre sistemas distribuídos orientados a eventos, especificamente na compreensão da macroarquitetura do middleware e em como desacoplar de maneira eficiente o fluxo de comunicação interna entre o cliente MQTT, o módulo de tratamento (parser.py) e os handlers finais.
+
+***Arthur Felipe Leite de Vasconcelos***
+
+Desafio: Responsável pela camada de infraestrutura virtualizada. Enfrentou barreiras no isolamento das redes internas do Docker Compose, na persistência de volumes voláteis para o broker de mensagens e na garantia de que múltiplos containers conseguissem resolver o mapeamento de portas locais de forma transparente.
+
+***Dacio da Silva Melo Junior***
+
+Desafio: Focado no fluxo lógico do ponto de entrada principal (main.py). O principal obstáculo técnico foi desenvolver rotinas de tratamento defensivo de erros para garantir que o script principal não encerrasse sua execução abruptamente na ausência momentânea do broker MQTT, criando loops robustos de reconexão automática.
+
+***Matheus Fabiano Barbosa Aguiar***
+
+Desafio: Responsável pela camada de apresentação de dados e observabilidade. Teve o desafio de integrar o consumo assíncrono de mensagens MQTT com os gargalos de latência de um dashboard visual em tempo real, mitigando concorrência de concorrência e garantindo que os dados de telemetria fossem renderizados sem perdas.
