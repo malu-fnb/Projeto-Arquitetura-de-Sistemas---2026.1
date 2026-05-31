@@ -87,7 +87,7 @@ def process_sensor_data(parsed_data, correlation_id):
 
     sensor_type = sensor_data.get("sensor")
 
-    if sensor_type == "temperatura":
+\    if sensor_type == "temperatura":
         return processar_temperatura(sensor_data, correlation_id)
 
     elif sensor_type == "umidade":
