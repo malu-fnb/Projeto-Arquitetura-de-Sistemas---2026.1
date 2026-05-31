@@ -59,4 +59,4 @@ Desafio: Focado no fluxo lógico do ponto de entrada principal (main.py). O prin
 
 ***Matheus Fabiano Barbosa Aguiar***
 
-Desafio: Responsável pela camada de apresentação de dados e observabilidade. Teve o desafio de integrar o consumo assíncrono de mensagens MQTT com os gargalos de latência de um dashboard visual em tempo real, mitigando concorrência de concorrência e garantindo que os dados de telemetria fossem renderizados sem perdas.
+Desafio: Responsável pela camada de apresentação de dados e observabilidade em um Dashboard. Teve o desafio de integrar o consumo assíncrono de mensagens MQTT com os gargalos de latência de um dashboard visual em tempo real, mitigando concorrência de concorrência e garantindo que os dados de telemetria fossem renderizados sem perdas, teve dificuldades em fazer a integração entre os dados no dashboard 
