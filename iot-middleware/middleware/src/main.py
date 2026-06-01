@@ -89,11 +89,50 @@ def create_dashboard_client() -> DashboardClient:
         base_url=os.getenv("DASHBOARD_URL", "http://dashboard:5000"),
         username=os.getenv("DASHBOARD_USERNAME", "admin"),
         password=os.getenv("DASHBOARD_PASSWORD", "admin123"),
+        max_retries=int(os.getenv("DASHBOARD_MAX_RETRIES", "4")),
+        retry_delay=float(os.getenv("DASHBOARD_RETRY_DELAY", "2")),
+        timeout=float(os.getenv("DASHBOARD_TIMEOUT", "5")),
     )
 
 
-def process_sensor_data(parsed_data, correlation_id):
+def extract_sensor_data(parsed_data: dict, topic: Optional[str] = None) -> dict:
+    """
+    Aceita os dois formatos:
+
+    1) {"sensor":"temperatura","valor":45}
+
+    2) {"data":{"sensor":"temperatura","valor":45}}
+
+    Também aceita:
+    3) {"valor":45}
+    quando o tópico for sensores/temperatura, sensores/umidade etc.
+    """
+
     sensor_data = parsed_data.get("data", {})
+
+    # Caso o parser retorne:
+    # {"data": {"data": {"sensor": "...", "valor": ...}}}
+    if isinstance(sensor_data, dict) and isinstance(sensor_data.get("data"), dict):
+        sensor_data = sensor_data["data"]
+
+    if not isinstance(sensor_data, dict):
+        raise ValueError("Payload do sensor deve ser um objeto JSON.")
+
+    sensor_type = sensor_data.get("sensor")
+
+    # Se o sensor não vier no payload, tenta descobrir pelo tópico MQTT.
+    # Exemplo: sensores/temperatura -> temperatura
+    if not sensor_type and topic:
+        topic_parts = topic.split("/")
+        if len(topic_parts) >= 2 and topic_parts[0] == "sensores":
+            sensor_type = topic_parts[1]
+            sensor_data["sensor"] = sensor_type
+
+    return sensor_data
+
+
+def process_sensor_data(parsed_data: dict, correlation_id: str, topic: Optional[str] = None) -> dict:
+    sensor_data = extract_sensor_data(parsed_data, topic)
     sensor_type = sensor_data.get("sensor")
 
     if sensor_type == "temperatura":
@@ -120,23 +159,68 @@ def build_dashboard_payload(topic: str, processed: dict) -> dict:
     }
 
 
+def send_to_dashboard(
+    dashboard_client: DashboardClient,
+    dashboard_state: dict,
+    dashboard_payload: dict,
+    topic: str,
+    correlation_id: str,
+) -> None:
+    """
+    Envia dados ao dashboard.
+
+    Se o dashboard não estava disponível quando o middleware iniciou,
+    tenta autenticar novamente quando uma mensagem chega.
+    """
+
+    if not dashboard_state["logged_in"]:
+        logging.warning("Dashboard ainda não autenticado. Tentando autenticar novamente...")
+        dashboard_state["logged_in"] = dashboard_client.login()
+
+    if not dashboard_state["logged_in"]:
+        logging.error(
+            {
+                "erro": "Dashboard indisponível ou login falhou",
+                "topic": topic,
+                "correlation_id": correlation_id,
+            }
+        )
+        return
+
+    sent = dashboard_client.send_data(dashboard_payload)
+
+    if not sent:
+        logging.error(
+            {
+                "erro": "Falha ao enviar dado para o dashboard",
+                "topic": topic,
+                "correlation_id": correlation_id,
+            }
+        )
+
+
 def handle_listen(args: argparse.Namespace) -> None:
-    client = create_mqtt_client(args)
+    mqtt_client = create_mqtt_client(args)
 
     dashboard_client = create_dashboard_client()
-    dashboard_available = dashboard_client.login()
+    dashboard_state = {
+        "logged_in": dashboard_client.login()
+    }
 
-    if not dashboard_available:
-        logging.warning("Dashboard indisponível ou login falhou. Middleware continuará apenas processando logs.")
+    if not dashboard_state["logged_in"]:
+        logging.warning(
+            "Dashboard indisponível ou login falhou na inicialização. "
+            "O middleware continuará processando MQTT e tentará autenticar novamente ao receber mensagens."
+        )
 
-    client.connect()
+    mqtt_client.connect()
 
     def on_message(topic: str, payload: bytes, qos: int, retain: bool) -> None:
         correlation_id = str(uuid4())
 
         try:
             parsed = parse_message(payload, args.format)
-            processed = process_sensor_data(parsed, correlation_id)
+            processed = process_sensor_data(parsed, correlation_id, topic)
 
             output = {
                 "topic": topic,
@@ -150,17 +234,13 @@ def handle_listen(args: argparse.Namespace) -> None:
 
             dashboard_payload = build_dashboard_payload(topic, processed)
 
-            if dashboard_available:
-                sent = dashboard_client.send_data(dashboard_payload)
-
-                if not sent:
-                    logging.error(
-                        {
-                            "erro": "Falha ao enviar dado para o dashboard",
-                            "topic": topic,
-                            "correlation_id": correlation_id,
-                        }
-                    )
+            send_to_dashboard(
+                dashboard_client=dashboard_client,
+                dashboard_state=dashboard_state,
+                dashboard_payload=dashboard_payload,
+                topic=topic,
+                correlation_id=correlation_id,
+            )
 
         except ParserError as exc:
             logging.error(
@@ -182,9 +262,9 @@ def handle_listen(args: argparse.Namespace) -> None:
                 }
             )
 
-    client.subscribe(args.topic, on_message, qos=args.qos)
+    mqtt_client.subscribe(args.topic, on_message, qos=args.qos)
     logging.info("Listening on topic '%s'. Press Ctrl+C to stop.", args.topic)
-    client.listen_forever()
+    mqtt_client.listen_forever()
 
 
 def handle_publish(args: argparse.Namespace) -> None:
@@ -206,6 +286,7 @@ def handle_parse(args: argparse.Namespace) -> None:
 
 def main() -> int:
     logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
+
     cli = build_parser()
     args = cli.parse_args()
 

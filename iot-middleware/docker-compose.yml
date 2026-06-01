@@ -2,22 +2,25 @@ services:
   mqtt:
     image: eclipse-mosquitto:latest
     container_name: mosquitto
-    ports:
-      - "1883:1883"
-      - "9001:9001"
     command: mosquitto -c /mosquitto-no-auth.conf
+    networks:
+      - iot-network
 
   dashboard:
-    build: ./dashboard
+    build:
+      context: ./dashboard
     container_name: iot-dashboard
     ports:
-      - "5000:5000"
+      - "5100:5100"
     environment:
-      DASHBOARD_PORT: "5000"
+      DASHBOARD_PORT: "5100"
       JWT_SECRET_KEY: "iot-secret-dev-key-2024"
+    networks:
+      - iot-network
 
   middleware:
-    build: ./middleware
+    build:
+      context: ./middleware
     container_name: iot-middleware
     depends_on:
       - mqtt
@@ -28,6 +31,15 @@ services:
       MQTT_TOPIC: "sensores/#"
       PARSER_FORMAT: "auto"
 
-      DASHBOARD_URL: "http://dashboard:5000"
+      DASHBOARD_URL: "http://dashboard:5100"
       DASHBOARD_USERNAME: "admin"
       DASHBOARD_PASSWORD: "admin123"
+      DASHBOARD_MAX_RETRIES: "4"
+      DASHBOARD_RETRY_DELAY: "2"
+      DASHBOARD_TIMEOUT: "5"
+    networks:
+      - iot-network
+
+networks:
+  iot-network:
+    driver: bridge
